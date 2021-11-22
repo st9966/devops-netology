@@ -1,111 +1,92 @@
-1. Какого типа команда cd? Попробуйте объяснить, почему она именно такого типа; 
-опишите ход своих мыслей, если считаете что она могла бы быть другого типа.
-**Ответ**: cd это встроенная команда оболочки bash для смены каталога. Вполне возможно сделать ее не встроенной, 
-но тогда она не будет создавать новый экземпляр shell при каждой смене директории. А это не удобно.
+1. Какой системный вызов делает команда cd? В прошлом ДЗ мы выяснили, что cd не является самостоятельной программой, 
+это shell builtin, поэтому запустить strace непосредственно на cd не получится. Тем не менее, вы можете запустить 
+strace на /bin/bash -c 'cd /tmp'. В этом случае вы увидите полный список системных вызовов, которые делает сам bash при старте.
+Вам нужно найти тот единственный, который относится именно к cd. Обратите внимание, что strace выдаёт результат своей работы в поток stderr, а не в stdout.
+***Ответ***
+'''chdir("/tmp") = 0'''
 
-2. Какая альтернатива без pipe команде grep <some_string> <some_file> | wc -l? man grep поможет в ответе на этот вопрос. 
-Ознакомьтесь с документом о других подобных некорректных вариантах использования pipe.
-**Ответ**:
-'vagrant@vagrant:~$ nano tst
-vagrant@vagrant:~$ grep 12345 tst | wc -l
-2
-vagrant@vagrant:~$ grep 12345 tst -c
-2'
+2. Попробуйте использовать команду file на объекты разных типов на файловой системе. Например:
+'''vagrant@netology1:~$ file /dev/tty
+   /dev/tty: character special (5/0)
+   vagrant@netology1:~$ file /dev/sda
+   /dev/sda: block special (8/0)
+   vagrant@netology1:~$ file /bin/bash
+   /bin/bash: ELF 64-bit LSB shared object, x86-64'''
+Используя strace выясните, где находится база данных file на основании которой она делает свои догадки.
+***Ответ***
+'''openat(AT_FDCWD, "/usr/share/misc/magic.mgc", O_RDONLY) = 3'''
 
-3. Какой процесс с PID 1 является родителем для всех процессов в вашей виртуальной машине Ubuntu 20.04?
-**Ответ**:
-'systemd(1)─┬─VBoxService(949)─┬─{VBoxService}(950)
-           │                  ├─{VBoxService}(951)
-           │                  ├─{VBoxService}(952)
-           │                  ├─{VBoxService}(953)
-           │                  ├─{VBoxService}(954)
-           │                  ├─{VBoxService}(955)
-           │                  ├─{VBoxService}(957)
-           │                  └─{VBoxService}(958)
-           ├─accounts-daemon(585)─┬─{accounts-daemon}(607)
-           │                      └─{accounts-daemon}(638)'
+3. Предположим, приложение пишет лог в текстовый файл. Этот файл оказался удален (deleted в lsof), однако возможности сигналом сказать приложению переоткрыть файлы
+или просто перезапустить приложение – нет. Так как приложение продолжает писать в удаленный файл, место на диске постепенно заканчивается. 
+Основываясь на знаниях о перенаправлении потоков предложите способ обнуления открытого удаленного файла (чтобы освободить место на файловой системе).
+***Ответ***
+'''vagrant@vagrant:~$ vi strace.log
+[3]+  Stopped                 vi strace.log
+vagrant@vagrant:~$ ps aux | grep vi
+root         585  0.0  0.7 238192  7500 ?        Ssl  Nov17   0:14 /usr/lib/accountsservice/accounts-daemon
+root         949  0.0  0.2 360948  2952 ?        Sl   Nov17   2:11 /usr/sbin/VBoxService --pidfile /var/run/vboxadd-service.sh
+vagrant    20585  0.2  0.9  24512  9960 pts/0    T    11:32   0:00 vi strace.log
+vagrant    20587  0.0  0.0   9032   736 pts/0    S+   11:32   0:00 grep --color=auto vi
+vagrant@vagrant:~$ rm strace.log
+vagrant@vagrant:~$ cat strace.log
+cat: strace.log: No such file or directory
+vagrant@vagrant:~$ lsof -p 20585 | grep strace.log
+vi      20585 vagrant    4u   REG  253,0     4096 131110 /home/vagrant/.strace.log.swp
+vagrant@vagrant:~$ cat /proc/20585/fd/4 > recovery.log'''
 
-4. Как будет выглядеть команда, которая перенаправит вывод stderr ls на другую сессию терминала?
-**Ответ**:
-'vagrant@vagrant:~$ ls -l \root 2>/dev/pts/1'
+4. Занимают ли зомби-процессы какие-то ресурсы в ОС (CPU, RAM, IO)?
+***Ответ***
+Нет, только запись в таблице PIDов
 
-5. Получится ли одновременно передать команде файл на stdin и вывести ее stdout в другой файл? 
-Приведите работающий пример.
-**Ответ**:
-'''vagrant@vagrant:~$ cat < tst > tst_1
-vagrant@vagrant:~$ cat tst_1
-ksaujdgskljgf
-sdafs
-12345
-dfs
-12345
-df
-sdf
-sd
-fsd
-f
-'''
+5. В iovisor BCC есть утилита opensnoop:
+root@vagrant:~# dpkg -L bpfcc-tools | grep sbin/opensnoop
+/usr/sbin/opensnoop-bpfcc
+На какие файлы вы увидели вызовы группы open за первую секунду работы утилиты? Воспользуйтесь пакетом bpfcc-tools для Ubuntu 20.04. 
+***Ответ***
+'''vagrant@vagrant:~$ dpkg -L bpfcc-tools | grep sbin/opensnoop
+/usr/sbin/opensnoop-bpfcc
+vagrant@vagrant:~$ sudo /usr/sbin/opensnoop-bpfcc
+PID    COMM               FD ERR PATH
+949    vminfo              4   0 /var/run/utmp
+593    dbus-daemon        -1   2 /usr/local/share/dbus-1/system-services
+593    dbus-daemon        18   0 /usr/share/dbus-1/system-services
+593    dbus-daemon        -1   2 /lib/dbus-1/system-services
+593    dbus-daemon        18   0 /var/lib/snapd/dbus-1/system-services/
+609    irqbalance          6   0 /proc/interrupts
+609    irqbalance          6   0 /proc/stat
+609    irqbalance          6   0 /proc/irq/20/smp_affinity
+609    irqbalance          6   0 /proc/irq/0/smp_affinity
+609    irqbalance          6   0 /proc/irq/1/smp_affinity'''
 
-6. Получится ли находясь в графическом режиме, вывести данные из PTY в какой-либо из эмуляторов TTY? 
-Сможете ли вы наблюдать выводимые данные?
-**Ответ**:
-'''root@vagrant:/home/vagrant# tty
-/dev/pts/0
-root@vagrant:/home/vagrant# echo tst > /dev/tty0'''
-Прочитать не удалось. Не смог перекючиться на tty0 
+6. Какой системный вызов использует uname -a? Приведите цитату из man по этому системному вызову,
+где описывается альтернативное местоположение в /proc, где можно узнать версию ядра и релиз ОС.
+***Ответ***
+Part of the utsname information is also accessible  via  /proc/sys/kernel/{ostype, hostname, osrelease, version, domainname}.
 
-7. Выполните команду bash 5>&1. К чему она приведет? Что будет, если вы выполните
-echo netology > /proc/$$/fd/5? Почему так происходит?
-**Ответ**:
-bash 5>&1 создаст сигнал 5 и отправит его в stdout
-echo netology > /proc/$$/fd/5 "запишет" netology в 5 дескриптор
+7. Чем отличается последовательность команд через ; и через && в bash? Например:
+root@netology1:~# test -d /tmp/some_dir; echo Hi
+Hi
+root@netology1:~# test -d /tmp/some_dir && echo Hi
+root@netology1:~#
+Есть ли смысл использовать в bash &&, если применить set -e?
+***Ответ***
+&& это управляющие операторы
+; это разделитель 
+test -d /tmp/some_dir && echo Hi Echo отработает только в случае вывода равного 0.
+Смысла использовать в конвеере вместе set -e и && нет, т.к. принцип их работы почти одинаков. 
 
-8. Получится ли в качестве входного потока для pipe использовать только stderr команды, 
-не потеряв при этом отображение stdout на pty? Напоминаем: по умолчанию через pipe передается только stdout команды 
-слева от | на stdin команды справа. Это можно сделать, поменяв стандартные потоки местами через промежуточный 
-новый дескриптор, который вы научились создавать в предыдущем вопросе.
-**Ответ**:
-''vagrant@vagrant:~$ grep 12345 ./tst -c | less 5>&2 2>&1 1>&5 > tst2
-vagrant@vagrant:~$ cat tst2
-2'''
+8. Из каких опций состоит режим bash set -euxo pipefail и почему его хорошо было бы использовать в сценариях?
+***Ответ***
+-e прерывает выполнение при значении отличном от 0
+-u не заданные переменные идут на stderr с завершением вызова
+-x трейс простых команд
+-o код возврата последовательности команд.
+Хороший уровень логирования и завершение выполнения сценария даже при ошибке на последнем этапе.
 
-9. Что выведет команда cat /proc/$$/environ? Как еще можно получить аналогичный по содержанию вывод?
-**Ответ**:
-Выведены переменные окружения. Можно получить env и printenv
-
-10. Используя man, опишите что доступно по адресам /proc/<PID>/cmdline, /proc/<PID>/exe.
-**Ответ**:
-'''/proc/<PID>/cmdline''' - путь до исполняемого файла процесса [PID]
-'''/proc/<PID>/exe''' - содержит ссылку до файла запущенного для процесса [PID]
-
-11. Узнайте, какую наиболее старшую версию набора инструкций SSE поддерживает ваш процессор с помощью /proc/cpuinfo
-**Ответ**:
-''cat /proc/cpuinfo | grep sse'' - sse4_1 sse4_2
-
-12. При открытии нового окна терминала и vagrant ssh создается новая сессия и выделяется pty. 
-Это можно подтвердить командой tty, которая упоминалась в лекции 3.2. Однако:
-'''vagrant@netology1:~$ ssh localhost 'tty'
-not a tty'''
-Почитайте, почему так происходит, и как изменить поведение.
-**Ответ**:
-Ожидается пользователь, а не процесс. можно запустить принудительно, указав ключ -t.
-
-13. Бывает, что есть необходимость переместить запущенный процесс из одной сессии в другую. 
-Попробуйте сделать это, воспользовавшись reptyr. Например, так можно перенести в screen процесс, 
-который вы запустили по ошибке в обычной SSH-сессии.
-**Ответ**:
-'''vagrant@vagrant:~$ ps aux | grep htop
-vagrant    14269  0.0  0.4  10548  4148 pts/1    T    08:56   0:00 htop
-vagrant    14590  0.0  0.4  10624  4040 pts/2    T    09:20   0:00 htop
-vagrant    14649  0.0  0.0   8900   736 pts/3    S+   09:42   0:00 grep --color=auto htop
-vagrant@vagrant:~$ tty
-/dev/pts/3
-vagrant@vagrant:~$ reptyr -s 14269'''
-
-14. sudo echo string > /root/new_file не даст выполнить перенаправление под обычным пользователем, 
-так как перенаправлением занимается процесс shell'а, который запущен без sudo под вашим пользователем. 
-Для решения данной проблемы можно использовать конструкцию echo string | sudo tee /root/new_file. 
-Узнайте что делает команда tee и почему в отличие от sudo echo команда с sudo tee будет работать.
-**Ответ**:
-программа tee записывает вывод команд и в файл и в stdout. В примере она получает значения от echo, 
-и поскольку запущенна от sudo имеет доступ на запись в файл.
+9. Используя -o stat для ps, определите, какой наиболее часто встречающийся статус у процессов в системе. 
+В man ps ознакомьтесь (/PROCESS STATE CODES) что значат дополнительные к основной заглавной буквы статуса процессов. 
+Его можно не учитывать при расчете (считать S, Ss или Ssl равнозначными).
+***Ответ***
+S- спящий
+I- процессы прерывания ядра
+T- остановленные по управляющему сигналу
