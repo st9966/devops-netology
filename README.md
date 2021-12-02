@@ -129,7 +129,7 @@ root@vagrant:/home/vagrant# dig dns.google.com
 ; <<>> DiG 9.16.1-Ubuntu <<>> dns.google.com
 ;; global options: +cmd
 ;; Got answer:
-;; ->>HEADER<<- opcode: QUERY, status: NOERROR, id: 47967
+;; ->>HEADER<<- opcode: QUERY, status: NOERROR, id: 11189
 ;; flags: qr rd ra; QUERY: 1, ANSWER: 2, AUTHORITY: 0, ADDITIONAL: 1
 
 ;; OPT PSEUDOSECTION:
@@ -138,17 +138,43 @@ root@vagrant:/home/vagrant# dig dns.google.com
 ;dns.google.com.                        IN      A
 
 ;; ANSWER SECTION:
-dns.google.com.         612     IN      A       8.8.8.8
-dns.google.com.         612     IN      A       8.8.4.4
+dns.google.com.         690     IN      A       8.8.4.4
+dns.google.com.         690     IN      A       8.8.8.8
 ```
 8. Проверьте PTR записи для IP адресов из задания 7. Какое доменное имя привязано к IP? воспользуйтесь утилитой dig
 ***Ответ***
 ```buildoutcfg
 root@vagrant:/home/vagrant# dig -x 8.8.8.8
-;; ANSWER SECTION:
-8.8.8.8.in-addr.arpa.   10389   IN      PTR     dns.google.
 
-root@vagrant:/home/vagrant# dig -x 8.8.4.4
+; <<>> DiG 9.16.1-Ubuntu <<>> -x 8.8.8.8
+;; global options: +cmd
+;; Got answer:
+;; ->>HEADER<<- opcode: QUERY, status: NOERROR, id: 21438
+;; flags: qr rd ra; QUERY: 1, ANSWER: 1, AUTHORITY: 0, ADDITIONAL: 1
+
+;; OPT PSEUDOSECTION:
+; EDNS: version: 0, flags:; udp: 65494
+;; QUESTION SECTION:
+;8.8.8.8.in-addr.arpa.          IN      PTR
+
 ;; ANSWER SECTION:
-4.4.8.8.in-addr.arpa.   243     IN      PTR     dns.google.
+8.8.8.8.in-addr.arpa.   6554    IN      PTR     dns.google.
+
+root@vagrant:/home/vagrant# dig -x 8.8.4.4.
+dig: '.4.4.8.8.in-addr.arpa.' is not a legal name (empty label)
+root@vagrant:/home/vagrant# dig -x 8.8.4.4
+
+; <<>> DiG 9.16.1-Ubuntu <<>> -x 8.8.4.4
+;; global options: +cmd
+;; Got answer:
+;; ->>HEADER<<- opcode: QUERY, status: NOERROR, id: 8657
+;; flags: qr rd ra; QUERY: 1, ANSWER: 1, AUTHORITY: 0, ADDITIONAL: 1
+
+;; OPT PSEUDOSECTION:
+; EDNS: version: 0, flags:; udp: 65494
+;; QUESTION SECTION:
+;4.4.8.8.in-addr.arpa.          IN      PTR
+
+;; ANSWER SECTION:
+4.4.8.8.in-addr.arpa.   9675    IN      PTR     dns.google.
 ```
