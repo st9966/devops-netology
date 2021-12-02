@@ -1,194 +1,154 @@
-2. Могут ли файлы, являющиеся жесткой ссылкой на один объект, иметь разные права доступа и владельца? Почему?
+1. Работа c HTTP через телнет.
+Подключитесь утилитой телнет к сайту stackoverflow.com telnet stackoverflow.com 80
+отправьте HTTP запрос
+```
+GET /questions HTTP/1.0
+HOST: stackoverflow.com
+[press enter]
+[press enter]
+```
+В ответе укажите полученный HTTP код, что он означает?
 ***Ответ***
-Нет, не могут, т.к. ссылки имеют один и тот же inode
-3. Сделайте vagrant destroy на имеющийся инстанс Ubuntu. Замените содержимое Vagrantfile следующим:
-***Ответ***
-'NAME                 MAJ:MIN RM  SIZE RO TYPE MOUNTPOINT
-sda                    8:0    0   64G  0 disk
-├─sda1                 8:1    0  512M  0 part /boot/efi
-├─sda2                 8:2    0    1K  0 part
-└─sda5                 8:5    0 63.5G  0 part
-  ├─vgvagrant-root   253:0    0 62.6G  0 lvm  /
-  └─vgvagrant-swap_1 253:1    0  980M  0 lvm  [SWAP]
-sdb                    8:16   0  2.5G  0 disk
-sdc                    8:32   0  2.5G  0 disk'
-4. Используя fdisk, разбейте первый диск на 2 раздела: 2 Гб, оставшееся пространство.
-***Ответ***
-'root@vagrant:/home/vagrant# lsblk
-NAME                 MAJ:MIN RM  SIZE RO TYPE MOUNTPOINT
-sda                    8:0    0   64G  0 disk
-├─sda1                 8:1    0  512M  0 part /boot/efi
-├─sda2                 8:2    0    1K  0 part
-└─sda5                 8:5    0 63.5G  0 part
-  ├─vgvagrant-root   253:0    0 62.6G  0 lvm  /
-  └─vgvagrant-swap_1 253:1    0  980M  0 lvm  [SWAP]
-sdb                    8:16   0  2.5G  0 disk
-├─sdb1                 8:17   0    2G  0 part
-└─sdb2                 8:18   0  511M  0 part
-sdc                    8:32   0  2.5G  0 disk'
-5. Используя sfdisk, перенесите данную таблицу разделов на второй диск.
-***Ответ***
-'root@vagrant:/home/vagrant# sfdisk -d /dev/sdb|sfdisk --force /dev/sdc
-Checking that no-one is using this disk right now ... OK
+```
+telnet> open stackoverflow.com 80
+Trying 151.101.1.69...
+Connected to stackoverflow.com.
+Escape character is '^]'.
+GET /questions HTTP/1.0
+HOST: stackoverflow.com
 
-Disk /dev/sdc: 2.51 GiB, 2684354560 bytes, 5242880 sectors
-Disk model: VBOX HARDDISK
-Units: sectors of 1 * 512 = 512 bytes
-Sector size (logical/physical): 512 bytes / 512 bytes
-I/O size (minimum/optimal): 512 bytes / 512 bytes
+HTTP/1.1 301 Moved Permanently
+cache-control: no-cache, no-store, must-revalidate
+location: https://stackoverflow.com/questions
+x-request-guid: 17b60bd3-3e3c-4382-ac70-526e4e4ecc2a
+feature-policy: microphone 'none'; speaker 'none'
+content-security-policy: upgrade-insecure-requests; frame-ancestors 'self' https://stackexchange.com
+Accept-Ranges: bytes
+Date: Wed, 01 Dec 2021 08:11:51 GMT
+Via: 1.1 varnish
+Connection: close
+X-Served-By: cache-fra19168-FRA
+X-Cache: MISS
+X-Cache-Hits: 0
+X-Timer: S1638346311.421458,VS0,VE92
+Vary: Fastly-SSL
+X-DNS-Prefetch-Control: off
+Set-Cookie: prov=d6c9c845-4323-ad1d-7d1f-21293b6074cd; domain=.stackoverflow.com; expires=Fri, 01-Jan-2055 00:00:00 GMT; path=/; HttpOnly
+```
+301 код означает, что ресурс был перемещен. location означает место куда ресурс переехал.
 
->>> Script header accepted.
->>> Script header accepted.
->>> Script header accepted.
->>> Script header accepted.
->>> Script header accepted.
->>> Script header accepted.
->>> Created a new GPT disklabel (GUID: 39F0215D-94EC-0145-B2BB-003165263541).
-/dev/sdc1: Created a new partition 1 of type 'Linux filesystem' and of size 2 GiB.
-/dev/sdc2: Created a new partition 2 of type 'Linux filesystem' and of size 511 MiB.
-/dev/sdc3: Done.
+2. Повторите задание 1 в браузере, используя консоль разработчика F12.
+откройте вкладку Network
+отправьте запрос http://stackoverflow.com
+найдите первый ответ HTTP сервера, откройте вкладку Headers
+укажите в ответе полученный HTTP код.
+проверьте время загрузки страницы, какой запрос обрабатывался дольше всего?
+приложите скриншот консоли браузера в ответ.
+***Ответ***
+```
+Запросить URL: https://stackoverflow.com/
+Метод запроса: GET
+Код статуса: 200 
+Удаленный адрес: 151.101.1.69:443
+Правило для URL перехода: strict-origin-when-cross-origin
+accept-ranges: bytes
+cache-control: private
+content-encoding: gzip
+Content-Security-Policy: upgrade-insecure-requests; frame-ancestors 'self' https://stackexchange.com
+content-type: text/html; charset=utf-8
+date: Thu, 02 Dec 2021 08:56:56 GMT
+feature-policy: microphone 'none'; speaker 'none'
+strict-transport-security: max-age=15552000
+vary: Accept-Encoding,Fastly-SSL
+via: 1.1 varnish
+x-cache: MISS
+x-cache-hits: 0
+x-dns-prefetch-control: off
+x-frame-options: SAMEORIGIN
+x-request-guid: 600fc1cc-f1eb-4545-9d3c-b8d94e3b8266
+x-served-by: cache-fra19157-FRA
+x-timer: S1638435416.309379,VS0,VE95
+```
+![img.png](img.png)
 
-New situation:
-Disklabel type: gpt
-Disk identifier: 39F0215D-94EC-0145-B2BB-003165263541
+3. Какой IP адрес у вас в интернете?
+***Ответ***
+```
+root@vagrant:/home/vagrant# wget -qO- ident.me
+46.48.88.111
+```
 
-Device       Start     End Sectors  Size Type
-/dev/sdc1     2048 4196351 4194304    2G Linux filesystem
-/dev/sdc2  4196352 5242846 1046495  511M Linux filesystem'
-6. Соберите mdadm RAID1 на паре разделов 2 Гб
+4. Какому провайдеру принадлежит ваш IP адрес? Какой автономной системе AS? Воспользуйтесь утилитой whois
 ***Ответ***
-'root@vagrant:/home/vagrant# mdadm --create --verbose /dev/md1 -l 1 -n 2 /dev/sd{b1,c1}
-mdadm: Note: this array has metadata at the start and
-    may not be suitable as a boot device.  If you plan to
-    store '/boot' on this device please ensure that
-    your boot-loader understands md/v1.x metadata, or use
-    --metadata=0.90
-mdadm: size set to 2094080K
-Continue creating array? y
-mdadm: Defaulting to version 1.2 metadata
-mdadm: array /dev/md1 started.'
-7. Соберите mdadm RAID0 на второй паре маленьких разделов.
-***Ответ***
-'root@vagrant:/home/vagrant# mdadm --create --verbose /dev/md0 -l 1 -n 2 /dev/sd{b2,c2}
-mdadm: Note: this array has metadata at the start and
-    may not be suitable as a boot device.  If you plan to
-    store '/boot' on this device please ensure that
-    your boot-loader understands md/v1.x metadata, or use
-    --metadata=0.90
-mdadm: size set to 522176K
-Continue creating array? y
-mdadm: Defaulting to version 1.2 metadata
-mdadm: array /dev/md0 started.'
-8. Создайте 2 независимых PV на получившихся md-устройствах.
-***Ответ***
-'root@vagrant:/home/vagrant# pvcreate /dev/md1 /dev/md0
-  Physical volume "/dev/md1" successfully created.
-  Physical volume "/dev/md0" successfully created.'
-9. Создайте общую volume-group на этих двух PV.
-***Ответ***
-'root@vagrant:/home/vagrant# vgcreate vg0 /dev/md1 /dev/md0
-  Volume group "vg0" successfully created'
-10. Создайте LV размером 100 Мб, указав его расположение на PV с RAID0.
-***Ответ***
-'root@vagrant:/home/vagrant# lvcreate -L 100M vg0 /dev/md0
-  Logical volume "lvol0" created.
-root@vagrant:/home/vagrant# lvs
-  LV     VG        Attr       LSize   Pool Origin Data%  Meta%  Move Log Cpy%Sync Convert
-  lvol0  vg0       -wi-a----- 100.00m
-  root   vgvagrant -wi-ao---- <62.54g
-  swap_1 vgvagrant -wi-ao---- 980.00m'
-11. Создайте mkfs.ext4 ФС на получившемся LV.
-***Ответ***
-'root@vagrant:/home/vagrant# mkfs.ext4 /dev/vg0/lvol0
-mke2fs 1.45.5 (07-Jan-2020)
-Creating filesystem with 25600 4k blocks and 25600 inodes
+```
+root@vagrant:/home/vagrant# whois 46.48.88.111
+org-name:       LLC "KomTehCentr"
+origin:         AS12668
+```
 
-Allocating group tables: done
-Writing inode tables: done
-Creating journal (1024 blocks): done
-Writing superblocks and filesystem accounting information: done'
-12. Смонтируйте этот раздел в любую директорию, например, /tmp/new.
+5. Через какие сети проходит пакет, отправленный с вашего компьютера на адрес 8.8.8.8? Через какие AS?  
+Воспользуйтесь утилитой traceroute
 ***Ответ***
-'root@vagrant:/home/vagrant# mount /dev/vg0/lvol0 /tmp/new'
-13. Поместите туда тестовый файл, например wget https://mirror.yandex.ru/ubuntu/ls-lR.gz -O /tmp/new/test.gz
-***Ответ***
-'root@vagrant:/home/vagrant# ls /tmp/new/
-lost+found  test.gz'
-14. Прикрепите вывод lsblk
-***Ответ***
-'root@vagrant:/home/vagrant# lsblk
-NAME                 MAJ:MIN RM  SIZE RO TYPE  MOUNTPOINT
-sda                    8:0    0   64G  0 disk
-├─sda1                 8:1    0  512M  0 part  /boot/efi
-├─sda2                 8:2    0    1K  0 part
-└─sda5                 8:5    0 63.5G  0 part
-  ├─vgvagrant-root   253:0    0 62.6G  0 lvm   /
-  └─vgvagrant-swap_1 253:1    0  980M  0 lvm   [SWAP]
-sdb                    8:16   0  2.5G  0 disk
-├─sdb1                 8:17   0    2G  0 part
-│ └─md1                9:1    0    2G  0 raid1
-└─sdb2                 8:18   0  511M  0 part
-  └─md0                9:0    0  510M  0 raid1
-    └─vg0-lvol0      253:2    0  100M  0 lvm   /tmp/new
-sdc                    8:32   0  2.5G  0 disk
-├─sdc1                 8:33   0    2G  0 part
-│ └─md1                9:1    0    2G  0 raid1
-└─sdc2                 8:34   0  511M  0 part
-  └─md0                9:0    0  510M  0 raid1
-    └─vg0-lvol0      253:2    0  100M  0 lvm   /tmp/new'
-15. Протестируйте целостность файла:
-***Ответ***
-'root@vagrant:/home/vagrant# gzip -t /tmp/new/test.gz
-root@vagrant:/home/vagrant# echo $?
-0'
-16. Используя pvmove, переместите содержимое PV с RAID0 на RAID1.
-***Ответ***
-'root@vagrant:/home/vagrant# pvmove /dev/md0
-  /dev/md0: Moved: 16.00%
-  /dev/md0: Moved: 100.00%
-root@vagrant:/home/vagrant# lsblk
-NAME                 MAJ:MIN RM  SIZE RO TYPE  MOUNTPOINT
-sda                    8:0    0   64G  0 disk
-├─sda1                 8:1    0  512M  0 part  /boot/efi
-├─sda2                 8:2    0    1K  0 part
-└─sda5                 8:5    0 63.5G  0 part
-  ├─vgvagrant-root   253:0    0 62.6G  0 lvm   /
-  └─vgvagrant-swap_1 253:1    0  980M  0 lvm   [SWAP]
-sdb                    8:16   0  2.5G  0 disk
-├─sdb1                 8:17   0    2G  0 part
-│ └─md1                9:1    0    2G  0 raid1
-│   └─vg0-lvol0      253:2    0  100M  0 lvm   /tmp/new
-└─sdb2                 8:18   0  511M  0 part
-  └─md0                9:0    0  510M  0 raid1
-sdc                    8:32   0  2.5G  0 disk
-├─sdc1                 8:33   0    2G  0 part
-│ └─md1                9:1    0    2G  0 raid1
-│   └─vg0-lvol0      253:2    0  100M  0 lvm   /tmp/new
-└─sdc2                 8:34   0  511M  0 part
-  └─md0                9:0    0  510M  0 raid1'
-17. Сделайте --fail на устройство в вашем RAID1 md.
-***Ответ***
-'mdadm /dev/md1 --fail /dev/sdb1'
-18. Подтвердите выводом dmesg, что RAID1 работает в деградированном состоянии.
-***Ответ***
-'root@vagrant:/home/vagrant# dmesg | grep md1
-[ 3760.548748] md/raid1:md1: not clean -- starting background reconstruction
-[ 3760.548754] md/raid1:md1: active with 2 out of 2 mirrors
-[ 3760.548806] md1: detected capacity change from 0 to 2144337920
-[ 3760.553447] md: resync of RAID array md1
-[ 3771.294864] md: md1: resync done.
-[ 4929.658462] md/raid1:md1: Disk failure on sdb1, disabling device.
-               md/raid1:md1: Operation continuing on 1 devices.'
-19. Протестируйте целостность файла, несмотря на "сбойный" диск он должен продолжать быть доступен:
-***Ответ***
-'root@vagrant:/home/vagrant# gzip -t /tmp/new/test.gz
-root@vagrant:/home/vagrant# echo $?
-0'
-20. Погасите тестовый хост, vagrant destroy
-***Ответ***
-'PS C:\HashiCorp\conf> vagrant.exe destroy
-    default: Are you sure you want to destroy the 'default' VM? [y/N] y
-==> default: Forcing shutdown of VM...
-==> default: Destroying VM and associated drives...'
+```
+traceroute -A -M icmp 8.8.8.8
+6. root@vagrant:/home/vagrant# traceroute -A -M icmp 8.8.8.8
+traceroute to 8.8.8.8 (8.8.8.8), 30 hops max, 60 byte packets
+ 1  _gateway (10.0.2.2) [*]  0.405 ms  0.372 ms  0.363 ms
+ 2  192.168.0.1 (192.168.0.1) [*]  2.465 ms  2.457 ms  2.450 ms
+ 3  vl1365.ar04-25.ekb.ru.mirasystem.net (46.48.88.111) [AS12666]  2.755 ms  3.062 ms  4.803 ms
+ 4  be5-4031.sr36-27.ekb.ru.mirasystem.net (92.242.30.102) [AS12666]  4.789 ms  4.951 ms  5.020 ms
+ 5  be5-4031.sr36-27.ekb.ru.mirasystem.net (92.242.30.102) [AS12666]  4.948 ms  5.064 ms  5.299 ms
+ 6  212.188.22.34 (212.188.22.34) [AS8359]  8.482 ms  7.011 ms  7.570 ms
+ 7  asb-cr01-ae9.200.ekt.mts-internet.net (212.188.22.33) [AS8359]  5.184 ms  9.258 ms  9.238 ms
+ 8  zoo-cr03-be1.66.ekt.mts-internet.net (212.188.29.249) [AS8359]  9.184 ms  8.990 ms  8.947 ms
+ 9  vish-cr01-be7.66.kaz.mts-internet.net (212.188.29.85) [AS8359]  22.038 ms  22.419 ms  22.366 ms
+10  mag9-cr02-be6.16.msk.mts-internet.net (195.34.50.161) [AS8359]  35.979 ms  36.372 ms  35.751 ms
+11  mag9-cr01-be16.77.msk.mts-internet.net (212.188.29.82) [AS8359]  36.453 ms  36.262 ms  31.859 ms
+12  108.170.250.130 (108.170.250.130) [AS15169]  32.883 ms  33.589 ms  31.221 ms
+13  209.85.255.136 (209.85.255.136) [AS15169]  47.854 ms  48.236 ms  48.204 ms
+14  209.85.254.20 (209.85.254.20) [AS15169]  50.562 ms  50.386 ms  55.518 ms
+15  142.250.56.129 (142.250.56.129) [AS15169]  47.103 ms  47.580 ms  47.475 ms
+25  dns.google (8.8.8.8) [AS15169]  48.794 ms  49.197 ms *
+```
 
+6. Повторите задание 5 в утилите mtr. На каком участке наибольшая задержка - delay?
+***Ответ***
+На 3м хосте:
+```buildoutcfg
+root@vagrant:/home/vagrant# mtr 8.8.8.8
+ Host                                                                        Loss%   Snt   Last   Avg  Best  Wrst StDev
+ 1. _gateway                                                                  0.0%   154    0.5   0.8   0.1  21.7   1.8
+ 2. 192.168.0.1                                                               0.0%   154    1.8   2.2   0.7  40.8   4.0
+ 3. vl1365.ar04-25.ekb.ru.mirasystem.net                                      0.0%   154    4.7  19.5   1.2 224.5  43.1
+```
+7. Какие DNS сервера отвечают за доменное имя dns.google? Какие A записи? воспользуйтесь утилитой dig
+***Ответ***
+```buildoutcfg
+root@vagrant:/home/vagrant# dig dns.google.com
 
+; <<>> DiG 9.16.1-Ubuntu <<>> dns.google.com
+;; global options: +cmd
+;; Got answer:
+;; ->>HEADER<<- opcode: QUERY, status: NOERROR, id: 47967
+;; flags: qr rd ra; QUERY: 1, ANSWER: 2, AUTHORITY: 0, ADDITIONAL: 1
+
+;; OPT PSEUDOSECTION:
+; EDNS: version: 0, flags:; udp: 65494
+;; QUESTION SECTION:
+;dns.google.com.                        IN      A
+
+;; ANSWER SECTION:
+dns.google.com.         612     IN      A       8.8.8.8
+dns.google.com.         612     IN      A       8.8.4.4
+```
+8. Проверьте PTR записи для IP адресов из задания 7. Какое доменное имя привязано к IP? воспользуйтесь утилитой dig
+***Ответ***
+```buildoutcfg
+root@vagrant:/home/vagrant# dig -x 8.8.8.8
+;; ANSWER SECTION:
+8.8.8.8.in-addr.arpa.   10389   IN      PTR     dns.google.
+
+root@vagrant:/home/vagrant# dig -x 8.8.4.4
+;; ANSWER SECTION:
+4.4.8.8.in-addr.arpa.   243     IN      PTR     dns.google.
+```
