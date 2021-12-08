@@ -42,7 +42,7 @@ Paths: (24 available, best #19, table default)
 ```
 
 2. Создайте dummy0 интерфейс в Ubuntu. Добавьте несколько статических маршрутов. Проверьте таблицу маршрутизации.
-***Ответ*** 
+***Ответ***
 ```buildoutcfg
 root@vagrant:/home/vagrant# ip link add dummy0 type dummy
 root@vagrant:/home/vagrant# ip addr show
