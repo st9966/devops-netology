@@ -1,122 +1,118 @@
-1. Подключитесь к публичному маршрутизатору в интернет. Найдите маршрут к вашему публичному IP
-```
-telnet route-views.routeviews.org
-Username: rviews
-show ip route x.x.x.x/32
-show bgp x.x.x.x/32
-```  
-***Ответ***  
-```buildoutcfg
-route-views>show ip route 46.48.**.**
-Routing entry for 46.48.0.0/17
-  Known via "bgp 6447", distance 20, metric 0
-  Tag 6939, type external
-  Last update from 64.71.137.241 7w0d ago
-  Routing Descriptor Blocks:
-  * 64.71.137.241, from 64.71.137.241, 7w0d ago
-      Route metric is 0, traffic share count is 1
-      AS Hops 2
-      Route tag 6939
-      MPLS label: none
-      
-route-views>show bgp 46.48.**.**
-BGP routing table entry for 46.48.0.0/17, version 1085789073
-Paths: (24 available, best #19, table default)
-  Not advertised to any peer
-  Refresh Epoch 1
-  4901 6079 8359 12668
-    162.250.137.254 from 162.250.137.254 (162.250.137.254)
-      Origin IGP, localpref 100, valid, external
-      Community: 65000:10100 65000:10300 65000:10400
-      path 7FE0AA108680 RPKI State not found
-      rx pathid: 0, tx pathid: 0
-  Refresh Epoch 3
-  ...
-  ...
-    Refresh Epoch 1
-    1351 8359 12668
-    132.198.255.253 from 132.198.255.253 (132.198.255.253)
-      Origin IGP, localpref 100, valid, external
-      path 7FE04B45D7B0 RPKI State not found
-      rx pathid: 0, tx pathid: 0
-```
-
-2. Создайте dummy0 интерфейс в Ubuntu. Добавьте несколько статических маршрутов. Проверьте таблицу маршрутизации.
+1.Установите Bitwarden плагин для браузера. Зарегестрируйтесь и сохраните несколько паролей.
 ***Ответ***
-```buildoutcfg
-root@vagrant:/home/vagrant# ip link add dummy0 type dummy
-root@vagrant:/home/vagrant# ip addr show
-1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536 qdisc noqueue state UNKNOWN group default qlen 1000
-    link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
-    inet 127.0.0.1/8 scope host lo
-       valid_lft forever preferred_lft forever
-    inet6 ::1/128 scope host
-       valid_lft forever preferred_lft forever
-2: eth0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP group default qlen 1000
-    link/ether 08:00:27:73:60:cf brd ff:ff:ff:ff:ff:ff
-    inet 10.0.2.15/24 brd 10.0.2.255 scope global dynamic eth0
-       valid_lft 79790sec preferred_lft 79790sec
-    inet6 fe80::a00:27ff:fe73:60cf/64 scope link
-       valid_lft forever preferred_lft forever
-3: eth0.10@eth0: <BROADCAST,MULTICAST,SLAVE,UP,LOWER_UP> mtu 1500 qdisc noqueue master bond0 state UP group default qlen 1000
-    link/ether 08:00:27:73:60:cf brd ff:ff:ff:ff:ff:ff
-4: eth0.20@eth0: <BROADCAST,MULTICAST,SLAVE,UP,LOWER_UP> mtu 1500 qdisc noqueue master bond0 state UP group default qlen 1000
-    link/ether 08:00:27:73:60:cf brd ff:ff:ff:ff:ff:ff
-5: bond0: <BROADCAST,MULTICAST,MASTER> mtu 1500 qdisc noop state DOWN group default qlen 1000
-    link/ether 08:00:27:73:60:cf brd ff:ff:ff:ff:ff:ff
-6: dummy0: <BROADCAST,NOARP> mtu 1500 qdisc noop state DOWN group default qlen 1000
-    link/ether 1e:7b:07:7b:d5:88 brd ff:ff:ff:ff:ff:ff
-root@vagrant:/home/vagrant# route add -net 192.168.2.0/24 gw 10.0.2.15
-root@vagrant:/home/vagrant# route add -net 192.168.1.0/24 gw 10.0.2.15
-root@vagrant:/home/vagrant# netstat -rn
-Kernel IP routing table
-Destination     Gateway         Genmask         Flags   MSS Window  irtt Iface
-0.0.0.0         10.0.2.2        0.0.0.0         UG        0 0          0 eth0
-10.0.2.0        0.0.0.0         255.255.255.0   U         0 0          0 eth0
-10.0.2.2        0.0.0.0         255.255.255.255 UH        0 0          0 eth0
-192.168.1.0     10.0.2.15       255.255.255.0   UG        0 0          0 eth0
-192.168.2.0     10.0.2.15       255.255.255.0   UG        0 0          0 eth0
-```
+![img_3.png](img_3.png)
 
-3. Проверьте открытые TCP порты в Ubuntu, какие протоколы и приложения используют эти порты? Приведите несколько примеров.
-***Ответ***  
+2. Установите Google authenticator на мобильный телефон. Настройте вход в Bitwarden акаунт через Google authenticator OTP.
+***Ответ***
+![img_2.png](img_2.png)
+
+3. Установите apache2, сгенерируйте самоподписанный сертификат, настройте тестовый сайт для работы по HTTPS
+***Ответ***
+Из продуктива с работы. База 1с на https.
+![img_4.png](img_4.png)
+
+4. Проверьте на TLS уязвимости произвольный сайт в интернете.
+***Ответ***
+````root@vagrant:/home/vagrant/testssl.sh# ./testssl.sh -e --fast --parallel https://www.youtube.com
+
+###########################################################
+    testssl.sh       3.1dev from https://testssl.sh/dev/
+    (2dce751 2021-12-09 17:03:57 -- )
+
+      This program is free software. Distribution and
+             modification under GPLv2 permitted.
+      USAGE w/o ANY WARRANTY. USE IT AT YOUR OWN RISK!
+
+       Please file bugs @ https://testssl.sh/bugs/
+
+###########################################################
+
+ Using "OpenSSL 1.0.2-chacha (1.0.2k-dev)" [~183 ciphers]
+ on vagrant:./bin/openssl.Linux.x86_64
+ (built: "Jan 18 17:12:17 2019", platform: "linux-x86_64")
+
+
+ Start 2021-12-10 11:58:43        -->> 74.125.131.198:443 (www.youtube.com) <<--
+
+ Further IP addresses:   2a00:1450:4010:c1e::c6
+ rDNS (74.125.131.198):  lu-in-f198.1e100.net.
+ Service detected:       HTTP
+
+
+
+ Testing all 183 locally available ciphers against the server, ordered by encryption strength
+
+
+Hexcode  Cipher Suite Name (OpenSSL)       KeyExch.   Encryption  Bits     Cipher Suite Name (IANA/RFC)
+-----------------------------------------------------------------------------------------------------------------------------
+ xc030   ECDHE-RSA-AES256-GCM-SHA384       ECDH 256   AESGCM      256      TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
+
+ xc02c   ECDHE-ECDSA-AES256-GCM-SHA384     ECDH 256   AESGCM      256      TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384
+
+ xc014   ECDHE-RSA-AES256-SHA              ECDH 256   AES         256      TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA
+
+ xc00a   ECDHE-ECDSA-AES256-SHA            ECDH 256   AES         256      TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA
+
+ x9d     AES256-GCM-SHA384                 RSA        AESGCM      256      TLS_RSA_WITH_AES_256_GCM_SHA384
+
+ x35     AES256-SHA                        RSA        AES         256      TLS_RSA_WITH_AES_256_CBC_SHA
+
+ xc02f   ECDHE-RSA-AES128-GCM-SHA256       ECDH 256   AESGCM      128      TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256
+
+ xc02b   ECDHE-ECDSA-AES128-GCM-SHA256     ECDH 256   AESGCM      128      TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256
+
+ xc013   ECDHE-RSA-AES128-SHA              ECDH 256   AES         128      TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA
+
+ xc009   ECDHE-ECDSA-AES128-SHA            ECDH 256   AES         128      TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA
+root@vagrant:/home/vagrant/testssl.sh#
+ x9c     AES128-GCM-SHA256                 RSA        AESGCM      128      TLS_RSA_WITH_AES_128_GCM_SHA256
+
+ x2f     AES128-SHA                        RSA        AES         128      TLS_RSA_WITH_AES_128_CBC_SHA
+
+ x0a     DES-CBC3-SHA                      RSA        3DES        168      TLS_RSA_WITH_3DES_EDE_CBC_SHA
+
+
+
+ Done 2021-12-10 11:58:52 [  12s] -->> 74.125.131.198:443 (www.youtube.com) <<--commandline
+````
+
+5. Установите на Ubuntu ssh сервер, сгенерируйте новый приватный ключ. Скопируйте свой публичный ключ на другой сервер. 
+Подключитесь к серверу по SSH-ключу.
+***Ответ***
 ```commandline
-root@vagrant:/home/vagrant# ss -ltpn
-State  Recv-Q Send-Q   Local Address:Port   Peer Address:Port Process
-LISTEN 0      4096           0.0.0.0:111         0.0.0.0:*     users:(("rpcbind",pid=559,fd=4),("systemd",pid=1,fd=35))
-LISTEN 0      4096     127.0.0.53%lo:53          0.0.0.0:*     users:(("systemd-resolve",pid=560,fd=13))
-LISTEN 0      128            0.0.0.0:22          0.0.0.0:*     users:(("sshd",pid=1333,fd=3))
-LISTEN 0      4096              [::]:111            [::]:*     users:(("rpcbind",pid=559,fd=6),("systemd",pid=1,fd=37))
-LISTEN 0      128               [::]:22             [::]:*     users:(("sshd",pid=1333,fd=4))
-root@vagrant:/home/vagrant# lsof -nP -i | grep LISTEN
-systemd       1            root   35u  IPv4  16132      0t0  TCP *:111 (LISTEN)
-systemd       1            root   37u  IPv6  16136      0t0  TCP *:111 (LISTEN)
-rpcbind     559            _rpc    4u  IPv4  16132      0t0  TCP *:111 (LISTEN)
-rpcbind     559            _rpc    6u  IPv6  16136      0t0  TCP *:111 (LISTEN)
-systemd-r   560 systemd-resolve   13u  IPv4  19420      0t0  TCP 127.0.0.53:53 (LISTEN)
-sshd       1333            root    3u  IPv4  25281      0t0  TCP *:22 (LISTEN)
-sshd       1333            root    4u  IPv6  25292      0t0  TCP *:22 (LISTEN)
+root@vagrant:/home/vagrant# apt install openssh-server
+root@vagrant:/home/vagrant# systemctl start sshd.service
+root@vagrant:/home/vagrant# ssh-keygen
+Generating public/private rsa key pair.
+Enter file in which to save the key (/root/.ssh/id_rsa): test
+Enter passphrase (empty for no passphrase):
+Enter same passphrase again:
+Your identification has been saved in test
+Your public key has been saved in test.pub
+The key fingerprint is:
+SHA256:DUXiZQW+ureXkgfO8AsM5isyn2v3pN0GY6Yy2QQ3LsY root@vagrant
+The key's randomart image is:
++---[RSA 3072]----+
+|        ..*o.    |
+|       . *       |
+|        o .      |
+|    . o  o .     |
+|   . +o.S o      |
+|    Eooo*..      |
+|   . =.+=B o .   |
+|  o *.+= +O +    |
+|   =+*o.+o+*     |
++----[SHA256]-----+
+root@vagrant:/home/vagrant# echo public_key_string >> /home/vagrant/.ssh/authorized_keys
+ssh -i /home/vagrant/test.pub admin1c@10.8.0.1
+The authenticity of host '10.8.0.1 (10.8.0.1)' can't be established.
+ECDSA key fingerprint is SHA256:S2wL9FR97lln/ouXFAQdmMRtBeoRuDpiwZ5kTYzPh6k.
+Are you sure you want to continue connecting (yes/no/[fingerprint])?
 ```
-sshd - 22 порт. 111 - systemd
 
-4. Проверьте используемые UDP сокеты в Ubuntu, какие протоколы и приложения используют эти порты?
-***Ответ***  
-```commandline
-root@vagrant:/home/vagrant# lsof -nP -i | grep UDP
-systemd       1            root   36u  IPv4  16133      0t0  UDP *:111
-systemd       1            root   38u  IPv6  16139      0t0  UDP *:111
-systemd-n   400 systemd-network   20u  IPv4  50466      0t0  UDP 10.0.2.15:68
-rpcbind     559            _rpc    5u  IPv4  16133      0t0  UDP *:111
-rpcbind     559            _rpc    7u  IPv6  16139      0t0  UDP *:111
-systemd-r   560 systemd-resolve   12u  IPv4  19419      0t0  UDP 127.0.0.53:53
-root@vagrant:/home/vagrant# ss -lupn
-State  Recv-Q Send-Q   Local Address:Port   Peer Address:Port Process
-UNCONN 0      0        127.0.0.53%lo:53          0.0.0.0:*     users:(("systemd-resolve",pid=560,fd=12))
-UNCONN 0      0       10.0.2.15%eth0:68          0.0.0.0:*     users:(("systemd-network",pid=400,fd=20))
-UNCONN 0      0              0.0.0.0:111         0.0.0.0:*     users:(("rpcbind",pid=559,fd=5),("systemd",pid=1,fd=36))
-UNCONN 0      0                 [::]:111            [::]:*     users:(("rpcbind",pid=559,fd=7),("systemd",pid=1,fd=38))
-```
-111 systemd, 53 resolver
-
-5. Используя diagrams.net, создайте L3 диаграмму вашей домашней сети или любой другой сети, с которой вы работали.
-![img_1.png](img_1.png)
+6. Переименуйте файлы ключей из задания 5. Настройте файл конфигурации SSH клиента, так чтобы вход на удаленный 
+сервер осуществлялся по имени сервера.
+7. Соберите дамп трафика утилитой tcpdump в формате pcap, 100 пакетов. Откройте файл pcap в Wireshark.
+***Ответ***
+```root@vagrant:~# tcpdump -c 100 -w 0100.pcap```
+![img_5.png](img_5.png)
