@@ -112,6 +112,21 @@ Are you sure you want to continue connecting (yes/no/[fingerprint])?
 
 6. Переименуйте файлы ключей из задания 5. Настройте файл конфигурации SSH клиента, так чтобы вход на удаленный 
 сервер осуществлялся по имени сервера.
+***Ответ***
+```
+root@vagrant:~# touch ~/.ssh/config && chmod 600 ~/.ssh/config
+Host vagrant
+        HostName 10.8.0.1
+        IdentyFile /home/vagrant/test1.pub
+        User admin1c
+Host ms***er
+        User default_admin1c
+        IdentyGile /home/vagrant/test
+        Protocol 2
+root@vagrant:~# ssh ms***er
+admin1c@10.8.0.1's password:
+```
+
 7. Соберите дамп трафика утилитой tcpdump в формате pcap, 100 пакетов. Откройте файл pcap в Wireshark.
 ***Ответ***
 ```root@vagrant:~# tcpdump -c 100 -w 0100.pcap```
