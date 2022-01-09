@@ -81,7 +81,7 @@ vault secrets enable \
   -max-lease-ttl="175200h" \
   pki
 
-# create intermediate CA with common name example.com and save the CSR
+# create intermediate CA 
 vault write -format=json pki_int_ca/intermediate/generate/internal \
   common_name="Intermediate Certificate Authority" \
   country="Russian Federation" \
@@ -107,12 +107,12 @@ vault write -format=json pki_root_ca/root/sign-intermediate csr=@pki_intermediat
 vault write pki_int_ca/intermediate/set-signed \
   certificate=@intermediateCA.cert.pem
 
-# publish the intermediate CA urls ???
+# publish the intermediate CA urls 
 vault write pki_int_ca/config/urls \
   issuing_certificates="$ca_url/v1/pki_int_ca/ca" \
   crl_distribution_points="$ca_url/v1/pki_int_ca/crl"
 
-# create a role example-dot-com-server
+# create a role ub-srv-server
 vault write pki_int_ca/roles/ub-srv-server \
   country="Russia Federation" \
   locality="EKB" \
@@ -137,7 +137,7 @@ vault write pki_int_ca/roles/ub-srv-server \
   ext_key_usage="ServerAuth" \
   require_cn=true
 
-# create a role example-dot-com-client
+# create a role ub-srv-client
 vault write pki_int_ca/roles/ub-srv-client \
   country="Russia Federation" \
   locality="EKB" \
@@ -161,7 +161,7 @@ vault write pki_int_ca/roles/ub-srv-client \
   ext_key_usage="ClientAuth" \
   require_cn=true
 
-# Create cert, 5 years
+# Create cert, 720 hour
 vault write -format=json pki_int_ca/issue/ub-srv-server \
   common_name="ub-srv" \
   alt_names="ub-srv.local" \
