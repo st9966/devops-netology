@@ -1,188 +1,236 @@
 **Задача 1**
-Используя docker поднимите инстанс MySQL (версию 8). Данные БД сохраните в volume.
+Используя docker поднимите инстанс PostgreSQL (версию 13). Данные БД сохраните в volume.
 
-Изучите бэкап БД и восстановитесь из него.
+Подключитесь к БД PostgreSQL используя psql.
 
-Перейдите в управляющую консоль mysql внутри контейнера.
+Воспользуйтесь командой \? для вывода подсказки по имеющимся в psql управляющим командам.
 
-Используя команду \h получите список управляющих команд.
+Найдите и приведите управляющие команды для:
 
-Найдите команду для выдачи статуса БД и приведите в ответе из ее вывода версию сервера БД.
-
-Подключитесь к восстановленной БД и получите список таблиц из этой БД.
-
-Приведите в ответе количество записей с price > 300.
-
-В следующих заданиях мы будем продолжать работу с данным контейнером.
+вывода списка БД
+подключения к БД
+вывода списка таблиц
+вывода описания содержимого таблиц
+выхода из psql
 
 ***Ответ***
 ```commandline
-root@vagrant:/home/vagrant# docker pull mysql:8.0
-root@vagrant:/home/vagrant# docker run --rm -d --name mysql -e MYSQL_ROOT_PASSWORD='sa123()' -ti -p 3306:3306 -v mysql:/etc/mysql/ mysql:8.0
-b06011db2feef18a3c4488cedcd14cba0af9426dd1654e470ccb3a69dde4037b
+root@vagrant:/home/vagrant# docker pull postgres:13
+13: Pulling from library/postgres
+f7a1c6dad281: Pull complete
+77c22623b5a6: Pull complete
+0f6a6a85d014: Pull complete
+6012728e8256: Pull complete
+1eca9143e721: Pull complete
+ab9ebd05a23f: Pull complete
+16e63bb90eff: Pull complete
+4c15c24115ca: Pull complete
+29e5105cf506: Pull complete
+2e1fac082b6f: Pull complete
+986444e7d954: Pull complete
+8a9db2da20f5: Pull complete
+ad7ad7e9e11a: Pull complete
+Digest: sha256:94bbd9a92e24c309af48c695c4d253844b5839148f92428941d55b15629ca3f5
+Status: Downloaded newer image for postgres:13
+docker.io/library/postgres:13
+root@vagrant:/home/vagrant# docker volume create postgres
+postgres
+root@vagrant:/home/vagrant# docker run --rm -d --name postgres13 -e POSTGRES_PASSWORD='sa123()' -ti -p 5432:5432 -v postgres:/var/lib/postgresql/data postgres:13
+f0a76c51893abea10305327f93a9e4dab58179601fe3de2f3bc6bbafbabd329e
 root@vagrant:/home/vagrant# docker ps
-CONTAINER ID   IMAGE       COMMAND                  CREATED          STATUS         PORTS                                                  NAMES
-b06011db2fee   mysql:8.0   "docker-entrypoint.s…"   10 seconds ago   Up 9 seconds   0.0.0.0:3306->3306/tcp, :::3306->3306/tcp, 33060/tcp   mysql
-root@vagrant:/home/vagrant# docker exec -it b06011db2fee bash
-root@b06011db2fee:/# mysql test_db < /etc/mysql/dump.sql
-root@vagrant:/home/vagrant# docker exec -it b06011db2fee mysql test_db -u root -p
-mysql> \s
---------------
-mysql  Ver 8.0.28 for Linux on x86_64 (MySQL Community Server - GPL)
+CONTAINER ID   IMAGE         COMMAND                  CREATED         STATUS         PORTS                                       NAMES
+f0a76c51893a   postgres:13   "docker-entrypoint.s…"   5 seconds ago   Up 4 seconds   0.0.0.0:5432->5432/tcp, :::5432->5432/tcp   postgres13
+root@vagrant:/home/vagrant# docker exec -it postgres13 bin/bash
+root@f0a76c51893a:/# psql
+psql: error: connection to server on socket "/var/run/postgresql/.s.PGSQL.5432" failed: FATAL:  role "root" does not exist
+root@f0a76c51893a:/# psql -h localhost -U postgres
+psql (13.6 (Debian 13.6-1.pgdg110+1))
+Type "help" for help.
 
-Connection id:          12
-Current database:       test_db
-Current user:           root@localhost
-SSL:                    Not in use
-Current pager:          stdout
-Using outfile:          ''
-Using delimiter:        ;
-Server version:         8.0.28 MySQL Community Server - GPL
-Protocol version:       10
-Connection:             Localhost via UNIX socket
-Server characterset:    utf8mb4
-Db     characterset:    utf8mb4
-Client characterset:    latin1
-Conn.  characterset:    latin1
-UNIX socket:            /var/run/mysqld/mysqld.sock
-Binary data as:         Hexadecimal
-Uptime:                 9 min 0 sec
+postgres=# \q
+root@f0a76c51893a:/# psql -h localhost -U postgres
+psql (13.6 (Debian 13.6-1.pgdg110+1))
+Type "help" for help.
 
-Threads: 2  Questions: 49  Slow queries: 0  Opens: 161  Flush tables: 3  Open tables: 79  Queries per second avg: 0.090
-mysql> show tables;
-+----------------+
-| Tables_in_test |
-+----------------+
-| orders         |
-+----------------+
-1 row in set (0.00 sec)
+postgres=# \l
+                                 List of databases
+   Name    |  Owner   | Encoding |  Collate   |   Ctype    |   Access privileges
+-----------+----------+----------+------------+------------+-----------------------
+ postgres  | postgres | UTF8     | en_US.utf8 | en_US.utf8 |
+ template0 | postgres | UTF8     | en_US.utf8 | en_US.utf8 | =c/postgres          +
+           |          |          |            |            | postgres=CTc/postgres
+ template1 | postgres | UTF8     | en_US.utf8 | en_US.utf8 | =c/postgres          +
+           |          |          |            |            | postgres=CTc/postgres
+(3 rows)
 
-mysql> select count(*) from orders where price > 300;
-+----------+
-| count(*) |
-+----------+
-|        1 |
-+----------+
-1 row in set (0.00 sec)
+postgres=# CREATE DATABASE test;
+CREATE DATABASE
+postgres=# \c test
+You are now connected to database "test" as user "postgres".
+test=# \dtS
+                    List of relations
+   Schema   |          Name           | Type  |  Owner
+------------+-------------------------+-------+----------
+ pg_catalog | pg_aggregate            | table | postgres
+ pg_catalog | pg_am                   | table | postgres
+ pg_catalog | pg_amop                 | table | postgres
+
+test=# \dS+ pg_index
+                                      Table "pg_catalog.pg_index"
+     Column     |     Type     | Collation | Nullable | Default | Storage  | Stats target | Description
+----------------+--------------+-----------+----------+---------+----------+--------------+-------------
+ indexrelid     | oid          |           | not null |         | plain    |              |
+ indrelid       | oid          |           | not null |         | plain    |              |
+ indnatts       | smallint     |           | not null |         | plain    |              |
+ indnkeyatts    | smallint     |           | not null |         | plain    |              |
+ indisunique    | boolean      |           | not null |         | plain    |              |
+test=# \q
 ```
 
 **Задача 2**
-Создайте пользователя test в БД c паролем test-pass, используя:
+Используя psql создайте БД test_database.
 
-плагин авторизации mysql_native_password
-срок истечения пароля - 180 дней
-количество попыток авторизации - 3
-максимальное количество запросов в час - 100
-аттрибуты пользователя:
-Фамилия "Pretty"
-Имя "James"
-Предоставьте привелегии пользователю test на операции SELECT базы test_db.
+Изучите бэкап БД.
 
-Используя таблицу INFORMATION_SCHEMA.USER_ATTRIBUTES получите данные по пользователю test и приведите в ответе к задаче.
+Восстановите бэкап БД в test_database.
+
+Перейдите в управляющую консоль psql внутри контейнера.
+
+Подключитесь к восстановленной БД и проведите операцию ANALYZE для сбора статистики по таблице.
+
+Используя таблицу pg_stats, найдите столбец таблицы orders с наибольшим средним значением размера элементов в байтах.
+
+Приведите в ответе команду, которую вы использовали для вычисления и полученный результат.
 
 ***Ответ***
+```
+root@vagrant:/home/vagrant# docker exec -it postgres13 bin/bash
+root@f0a76c51893a:/# psql -h localhost -U postgres
+psql (13.6 (Debian 13.6-1.pgdg110+1))
+Type "help" for help.
 
-```commandline
-mysql> CREATE USER 'test'@'localhost' IDENTIFIED BY 'test-pass';
-Query OK, 0 rows affected (0.01 sec)
+postgres=# \l
+                                 List of databases
+   Name    |  Owner   | Encoding |  Collate   |   Ctype    |   Access privileges
+-----------+----------+----------+------------+------------+-----------------------
+ postgres  | postgres | UTF8     | en_US.utf8 | en_US.utf8 |
+ template0 | postgres | UTF8     | en_US.utf8 | en_US.utf8 | =c/postgres          +
+           |          |          |            |            | postgres=CTc/postgres
+ template1 | postgres | UTF8     | en_US.utf8 | en_US.utf8 | =c/postgres          +
+           |          |          |            |            | postgres=CTc/postgres
+ test      | postgres | UTF8     | en_US.utf8 | en_US.utf8 |
+(4 rows)
 
-mysql> ALTER USER 'test'@'localhost' ATTRIBUTE '{"fname":"James", "lname":"Pretty"}';
-Query OK, 0 rows affected (0.01 sec)
+postgres=# DROP DATABASE test;
+DROP DATABASE
+postgres=# CREATE DATABASE test_database;
+CREATE DATABASE
+postgres=# \q
+root@f0a76c51893a:/# psql -h localhost -U postgres test_database < /var/lib/postgresql/data/test_dump.sql
+SET
+SET
+SET
+SET
+SET
+ set_config
+------------
 
-mysql> ALTER USER 'test'@'localhost'
-    -> IDENTIFIED BY 'test-pass'
-    -> WITH
-    -> MAX_QUERIES_PER_HOUR 100
-    -> PASSWORD EXPIRE INTERVAL 180 DAY
-    -> FAILED_LOGIN_ATTEMPTS 3 PASSWORD_LOCK_TIME 2;
-Query OK, 0 rows affected (0.01 sec)
+(1 row)
 
-mysql> GRANT Select ON test_db.orders TO 'test'@'localhost';
-Query OK, 0 rows affected, 1 warning (0.01 sec)
+SET
+SET
+SET
+SET
+SET
+SET
+CREATE TABLE
+ALTER TABLE
+CREATE SEQUENCE
+ALTER TABLE
+ALTER SEQUENCE
+ALTER TABLE
+COPY 8
+ setval
+--------
+      8
+(1 row)
 
-mysql> SELECT * FROM INFORMATION_SCHEMA.USER_ATTRIBUTES WHERE USER='test';
-+------+-----------+---------------------------------------+
-| USER | HOST      | ATTRIBUTE                             |
-+------+-----------+---------------------------------------+
-| test | localhost | {"fname": "James", "lname": "Pretty"} |
-+------+-----------+---------------------------------------+
-1 row in set (0.00 sec)
+ALTER TABLE
+root@f0a76c51893a:/# psql -h localhost -U postgres
+psql (13.6 (Debian 13.6-1.pgdg110+1))
+Type "help" for help.
+
+postgres=# \l
+                                   List of databases
+     Name      |  Owner   | Encoding |  Collate   |   Ctype    |   Access privileges
+---------------+----------+----------+------------+------------+-----------------------
+ postgres      | postgres | UTF8     | en_US.utf8 | en_US.utf8 |
+ template0     | postgres | UTF8     | en_US.utf8 | en_US.utf8 | =c/postgres          +
+               |          |          |            |            | postgres=CTc/postgres
+ template1     | postgres | UTF8     | en_US.utf8 | en_US.utf8 | =c/postgres          +
+               |          |          |            |            | postgres=CTc/postgres
+ test_database | postgres | UTF8     | en_US.utf8 | en_US.utf8 |
+(4 rows)
+
+postgres=# \c test_database
+You are now connected to database "test_database" as user "postgres".
+test_database=# \dt
+         List of relations
+ Schema |  Name  | Type  |  Owner
+--------+--------+-------+----------
+ public | orders | table | postgres
+(1 row)
+
+test_database=# ANALYZE VERBOSE public.orders;
+INFO:  analyzing "public.orders"
+INFO:  "orders": scanned 1 of 1 pages, containing 8 live rows and 0 dead rows; 8 rows in sample, 8 estimated total rows
+ANALYZE
+test_database=# select avg_width from pg_stats where tablename='orders';
+ avg_width
+-----------
+         4
+        16
+         4
+(3 rows)
+
+test_database=#
 ```
 
 **Задача 3**
-Установите профилирование SET profiling = 1. Изучите вывод профилирования команд SHOW PROFILES;.
+Архитектор и администратор БД выяснили, что ваша таблица orders разрослась до невиданных размеров и поиск по ней занимает долгое время. Вам, как успешному выпускнику курсов DevOps в нетологии предложили провести разбиение таблицы на 2 (шардировать на orders_1 - price>499 и orders_2 - price<=499).
 
-Исследуйте, какой engine используется в таблице БД test_db и приведите в ответе.
+Предложите SQL-транзакцию для проведения данной операции.
 
-Измените engine и приведите время выполнения и запрос на изменения из профайлера в ответе:
-
-на MyISAM
-на InnoDB
+Можно ли было изначально исключить "ручное" разбиение при проектировании таблицы orders?
 
 ***Ответ***
-```commandline
-mysql> SELECT TABLE_NAME,ENGINE,ROW_FORMAT,TABLE_ROWS,DATA_LENGTH,INDEX_LENGTH FROM information_schema.TABLES WHERE table_name = 'orders' and  TABLE_SCHEMA = 'test_db' ORDER BY ENGINE asc;
-+------------+--------+------------+------------+-------------+--------------+
-| TABLE_NAME | ENGINE | ROW_FORMAT | TABLE_ROWS | DATA_LENGTH | INDEX_LENGTH |
-+------------+--------+------------+------------+-------------+--------------+
-| orders     | InnoDB | Dynamic    |          5 |       16384 |            0 |
-+------------+--------+------------+------------+-------------+--------------+
-1 row in set (0.01 sec)
-
-mysql> ALTER TABLE orders ENGINE = MyISAM;
-Query OK, 5 rows affected (0.04 sec)
-Records: 5  Duplicates: 0  Warnings: 0
-
-mysql> ALTER TABLE orders ENGINE = InnoDB;
-Query OK, 5 rows affected (0.03 sec)
-Records: 5  Duplicates: 0  Warnings: 0
-
-mysql> SELECT TABLE_NAME,ENGINE,ROW_FORMAT,TABLE_ROWS,DATA_LENGTH,INDEX_LENGTH FROM information_schema.TABLES WHERE table_name = 'orders' and  TABLE_SCHEMA = 'test_db' ORDER BY ENGINE asc;
-+------------+--------+------------+------------+-------------+--------------+
-| TABLE_NAME | ENGINE | ROW_FORMAT | TABLE_ROWS | DATA_LENGTH | INDEX_LENGTH |
-+------------+--------+------------+------------+-------------+--------------+
-| orders     | InnoDB | Dynamic    |          5 |       16384 |            0 |
-+------------+--------+------------+------------+-------------+--------------+
-1 row in set (0.01 sec)
-
-mysql> ^C
-mysql> ALTER TABLE orders ENGINE = MyISAM;
-Query OK, 5 rows affected (0.04 sec)
-Records: 5  Duplicates: 0  Warnings: 0
-
-mysql> ^C
-mysql> ALTER TABLE orders ENGINE = InnoDB;
-Query OK, 5 rows affected (0.03 sec)
-Records: 5  Duplicates: 0  Warnings: 0
 ```
-Время переключения на MyISAM = 0.04 sec
-Время переключения на InnoDB = 0.03 sec
+test_database=# alter table orders rename to orders_old;
+ALTER TABLE
+test_database=# create table orders (id integer, title varchar(80), price integer) partition by range(price);
+CREATE TABLE
+test_database=# create table orders_499 partition of orders for values from (0) to (499);
+CREATE TABLE
+test_database=# create table orders_999 partition of orders for values from (499) to (999);
+CREATE TABLE
+test_database=# create table orders_1500 partition of orders for values from (1000) to (1500);
+CREATE TABLE
+test_database=# insert into orders (id, title, price) select * from orders_old;
+INSERT 0 8
+test_database=#
+```
+Да, можно было настроить секционирование таблицы.
 
 **Задача 4**
-Изучите файл my.cnf в директории /etc/mysql.
+Используя утилиту pg_dump создайте бекап БД test_database.
 
-Измените его согласно ТЗ (движок InnoDB):
-
-Скорость IO важнее сохранности данных
-Нужна компрессия таблиц для экономии места на диске
-Размер буффера с незакомиченными транзакциями 1 Мб
-Буффер кеширования 30% от ОЗУ
-Размер файла логов операций 100 Мб
-Приведите в ответе измененный файл my.cnf.
+Как бы вы доработали бэкап-файл, чтобы добавить уникальность значения столбца title для таблиц test_database?
 
 ***Ответ***
-[mysqld]
-pid-file        = /var/run/mysqld/mysqld.pid
-socket          = /var/run/mysqld/mysqld.sock
-datadir         = /var/lib/mysql
-secure-file-priv= NULL
 
-innodb_flush_log_at_trx_commit = 0 
+```commandline
+root@f0a76c51893a:/# cd /var/lib/postgresql/data/
+root@f0a76c51893a:/var/lib/postgresql/data# pg_dump -U postgres test_database > test_dump1.sql
+```
 
-innodb_file_format=Barracuda
-
-innodb_log_buffer_size	= 1M
-
-key_buffer_size = 640М
-
-max_binlog_size	= 100M
+Не уверен, но возможно добавил бы индекс. 
