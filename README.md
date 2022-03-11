@@ -232,5 +232,31 @@ test_database=#
 root@f0a76c51893a:/# cd /var/lib/postgresql/data/
 root@f0a76c51893a:/var/lib/postgresql/data# pg_dump -U postgres test_database > test_dump1.sql
 ```
+Создать первичный ключ в дампе, для каждой таблицы, в которой есть столбец title. Это придаст уникальности ему, за счет того, что не будет повторяться записи в столбце:
+```commandline
+CREATE TABLE public.orders (
+    id integer,
+    title character varying(80),
+    price integer,
+    CONSTRAINT title_pk PRIMARY KEY (title)
+)
+PARTITION BY RANGE (price);
 
-Не уверен, но возможно добавил бы индекс. 
+
+ALTER TABLE public.orders OWNER TO postgres;
+
+SET default_table_access_method = heap;
+
+--
+-- Name: orders_1500; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.orders_1500 (
+    id integer,
+    title character varying(80),
+    price integer,
+    CONSTRAINT title_pk PRIMARY KEY (title)
+);
+ALTER TABLE ONLY public.orders ATTACH PARTITION public.orders_1500 FOR VALUES FROM (1000) TO (1500);
+
+```
