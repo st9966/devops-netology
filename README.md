@@ -1,262 +1,270 @@
 **Задача 1**
-Используя docker поднимите инстанс PostgreSQL (версию 13). Данные БД сохраните в volume.
+В этом задании вы потренируетесь в:
 
-Подключитесь к БД PostgreSQL используя psql.
+установке elasticsearch
+первоначальном конфигурировании elastcisearch
+запуске elasticsearch в docker
+Используя докер образ centos:7 как базовый и документацию по установке и запуску Elastcisearch:
 
-Воспользуйтесь командой \? для вывода подсказки по имеющимся в psql управляющим командам.
+составьте Dockerfile-манифест для elasticsearch
+соберите docker-образ и сделайте push в ваш docker.io репозиторий
+запустите контейнер из получившегося образа и выполните запрос пути / c хост-машины
+Требования к elasticsearch.yml:
 
-Найдите и приведите управляющие команды для:
+данные path должны сохраняться в /var/lib
+имя ноды должно быть netology_test
+В ответе приведите:
 
-вывода списка БД
-подключения к БД
-вывода списка таблиц
-вывода описания содержимого таблиц
-выхода из psql
+текст Dockerfile манифеста
+ссылку на образ в репозитории dockerhub
+ответ elasticsearch на запрос пути / в json виде
+Подсказки:
+
+возможно вам понадобится установка пакета perl-Digest-SHA для корректной работы пакета shasum
+при сетевых проблемах внимательно изучите кластерные и сетевые настройки в elasticsearch.yml
+при некоторых проблемах вам поможет docker директива ulimit
+elasticsearch в логах обычно описывает проблему и пути ее решения
+Далее мы будем работать с данным экземпляром elasticsearch.
 
 ***Ответ***
 ```commandline
-root@vagrant:/home/vagrant# docker pull postgres:13
-13: Pulling from library/postgres
-f7a1c6dad281: Pull complete
-77c22623b5a6: Pull complete
-0f6a6a85d014: Pull complete
-6012728e8256: Pull complete
-1eca9143e721: Pull complete
-ab9ebd05a23f: Pull complete
-16e63bb90eff: Pull complete
-4c15c24115ca: Pull complete
-29e5105cf506: Pull complete
-2e1fac082b6f: Pull complete
-986444e7d954: Pull complete
-8a9db2da20f5: Pull complete
-ad7ad7e9e11a: Pull complete
-Digest: sha256:94bbd9a92e24c309af48c695c4d253844b5839148f92428941d55b15629ca3f5
-Status: Downloaded newer image for postgres:13
-docker.io/library/postgres:13
-root@vagrant:/home/vagrant# docker volume create postgres
-postgres
-root@vagrant:/home/vagrant# docker run --rm -d --name postgres13 -e POSTGRES_PASSWORD='sa123()' -ti -p 5432:5432 -v postgres:/var/lib/postgresql/data postgres:13
-f0a76c51893abea10305327f93a9e4dab58179601fe3de2f3bc6bbafbabd329e
-root@vagrant:/home/vagrant# docker ps
-CONTAINER ID   IMAGE         COMMAND                  CREATED         STATUS         PORTS                                       NAMES
-f0a76c51893a   postgres:13   "docker-entrypoint.s…"   5 seconds ago   Up 4 seconds   0.0.0.0:5432->5432/tcp, :::5432->5432/tcp   postgres13
-root@vagrant:/home/vagrant# docker exec -it postgres13 bin/bash
-root@f0a76c51893a:/# psql
-psql: error: connection to server on socket "/var/run/postgresql/.s.PGSQL.5432" failed: FATAL:  role "root" does not exist
-root@f0a76c51893a:/# psql -h localhost -U postgres
-psql (13.6 (Debian 13.6-1.pgdg110+1))
-Type "help" for help.
-
-postgres=# \q
-root@f0a76c51893a:/# psql -h localhost -U postgres
-psql (13.6 (Debian 13.6-1.pgdg110+1))
-Type "help" for help.
-
-postgres=# \l
-                                 List of databases
-   Name    |  Owner   | Encoding |  Collate   |   Ctype    |   Access privileges
------------+----------+----------+------------+------------+-----------------------
- postgres  | postgres | UTF8     | en_US.utf8 | en_US.utf8 |
- template0 | postgres | UTF8     | en_US.utf8 | en_US.utf8 | =c/postgres          +
-           |          |          |            |            | postgres=CTc/postgres
- template1 | postgres | UTF8     | en_US.utf8 | en_US.utf8 | =c/postgres          +
-           |          |          |            |            | postgres=CTc/postgres
-(3 rows)
-
-postgres=# CREATE DATABASE test;
-CREATE DATABASE
-postgres=# \c test
-You are now connected to database "test" as user "postgres".
-test=# \dtS
-                    List of relations
-   Schema   |          Name           | Type  |  Owner
-------------+-------------------------+-------+----------
- pg_catalog | pg_aggregate            | table | postgres
- pg_catalog | pg_am                   | table | postgres
- pg_catalog | pg_amop                 | table | postgres
-
-test=# \dS+ pg_index
-                                      Table "pg_catalog.pg_index"
-     Column     |     Type     | Collation | Nullable | Default | Storage  | Stats target | Description
-----------------+--------------+-----------+----------+---------+----------+--------------+-------------
- indexrelid     | oid          |           | not null |         | plain    |              |
- indrelid       | oid          |           | not null |         | plain    |              |
- indnatts       | smallint     |           | not null |         | plain    |              |
- indnkeyatts    | smallint     |           | not null |         | plain    |              |
- indisunique    | boolean      |           | not null |         | plain    |              |
-test=# \q
+root@vagrant:/home/vagrant/elasticsearch# curl -XGET http://localhost:9200
+{
+  "name" : "ed91683b3b14",
+  "cluster_name" : "netology_test",
+  "cluster_uuid" : "oLl2d999Qma608BIQBJLYg",
+  "version" : {
+    "number" : "8.1.0",
+    "build_flavor" : "default",
+    "build_type" : "tar",
+    "build_hash" : "3700f7679f7d95e36da0b43762189bab189bc53a",
+    "build_date" : "2022-03-03T14:20:00.690422633Z",
+    "build_snapshot" : false,
+    "lucene_version" : "9.0.0",
+    "minimum_wire_compatibility_version" : "7.17.0",
+    "minimum_index_compatibility_version" : "7.0.0"
+  },
+  "tagline" : "You Know, for Search"
 ```
 
 **Задача 2**
-Используя psql создайте БД test_database.
+В этом задании вы научитесь:
 
-Изучите бэкап БД.
+создавать и удалять индексы
+изучать состояние кластера
+обосновывать причину деградации доступности данных
+Ознакомтесь с документацией и добавьте в elasticsearch 3 индекса, в соответствии со таблицей:
 
-Восстановите бэкап БД в test_database.
+Имя	Количество реплик	Количество шард
+ind-1	0	1
+ind-2	1	2
+ind-3	2	4
+Получите список индексов и их статусов, используя API и приведите в ответе на задание.
 
-Перейдите в управляющую консоль psql внутри контейнера.
+Получите состояние кластера elasticsearch, используя API.
 
-Подключитесь к восстановленной БД и проведите операцию ANALYZE для сбора статистики по таблице.
+Как вы думаете, почему часть индексов и кластер находится в состоянии yellow?
 
-Используя таблицу pg_stats, найдите столбец таблицы orders с наибольшим средним значением размера элементов в байтах.
+Удалите все индексы.
 
-Приведите в ответе команду, которую вы использовали для вычисления и полученный результат.
+Важно
+
+При проектировании кластера elasticsearch нужно корректно рассчитывать количество реплик и шард, иначе возможна потеря данных индексов, вплоть до полной, при деградации системы.
+
 
 ***Ответ***
+
+Создание индексов:
+```commandline
+root@vagrant:/home/vagrant/elasticsearch# curl -X PUT localhost:9200/ind-1 -H 'Content-Type: application/json' -d'{ "settings": { "number_of_shards": 1,  "number_of_replicas": 0 }}'
+{"acknowledged":true,"shards_acknowledged":true,"index":"ind-1"}root@vagrant:/home/vagrant/elasticsearch#
+root@vagrant:/home/vagrant/elasticsearch# curl -X PUT localhost:9200/ind-2 -H 'Content-Type: application/json' -d'{ "settings": { "number_of_shards": 2,  "number_of_replicas": 1 }}'
+{"acknowledged":true,"shards_acknowledged":true,"index":"ind-2"}root@vagrant:/home/vagrant/elasticsearch#
+root@vagrant:/home/vagrant/elasticsearch# curl -X PUT localhost:9200/ind-3 -H 'Content-Type: application/json' -d'{ "settings": { "number_of_shards": 4,  "number_of_replicas": 2 }}'
+{"acknowledged":true,"shards_acknowledged":true,"index":"ind-3"}root@vagrant:/home/vagrant/elasticsearch#
+root@vagrant:/home/vagrant/elasticsearch#
 ```
-root@vagrant:/home/vagrant# docker exec -it postgres13 bin/bash
-root@f0a76c51893a:/# psql -h localhost -U postgres
-psql (13.6 (Debian 13.6-1.pgdg110+1))
-Type "help" for help.
-
-postgres=# \l
-                                 List of databases
-   Name    |  Owner   | Encoding |  Collate   |   Ctype    |   Access privileges
------------+----------+----------+------------+------------+-----------------------
- postgres  | postgres | UTF8     | en_US.utf8 | en_US.utf8 |
- template0 | postgres | UTF8     | en_US.utf8 | en_US.utf8 | =c/postgres          +
-           |          |          |            |            | postgres=CTc/postgres
- template1 | postgres | UTF8     | en_US.utf8 | en_US.utf8 | =c/postgres          +
-           |          |          |            |            | postgres=CTc/postgres
- test      | postgres | UTF8     | en_US.utf8 | en_US.utf8 |
-(4 rows)
-
-postgres=# DROP DATABASE test;
-DROP DATABASE
-postgres=# CREATE DATABASE test_database;
-CREATE DATABASE
-postgres=# \q
-root@f0a76c51893a:/# psql -h localhost -U postgres test_database < /var/lib/postgresql/data/test_dump.sql
-SET
-SET
-SET
-SET
-SET
- set_config
-------------
-
-(1 row)
-
-SET
-SET
-SET
-SET
-SET
-SET
-CREATE TABLE
-ALTER TABLE
-CREATE SEQUENCE
-ALTER TABLE
-ALTER SEQUENCE
-ALTER TABLE
-COPY 8
- setval
---------
-      8
-(1 row)
-
-ALTER TABLE
-root@f0a76c51893a:/# psql -h localhost -U postgres
-psql (13.6 (Debian 13.6-1.pgdg110+1))
-Type "help" for help.
-
-postgres=# \l
-                                   List of databases
-     Name      |  Owner   | Encoding |  Collate   |   Ctype    |   Access privileges
----------------+----------+----------+------------+------------+-----------------------
- postgres      | postgres | UTF8     | en_US.utf8 | en_US.utf8 |
- template0     | postgres | UTF8     | en_US.utf8 | en_US.utf8 | =c/postgres          +
-               |          |          |            |            | postgres=CTc/postgres
- template1     | postgres | UTF8     | en_US.utf8 | en_US.utf8 | =c/postgres          +
-               |          |          |            |            | postgres=CTc/postgres
- test_database | postgres | UTF8     | en_US.utf8 | en_US.utf8 |
-(4 rows)
-
-postgres=# \c test_database
-You are now connected to database "test_database" as user "postgres".
-test_database=# \dt
-         List of relations
- Schema |  Name  | Type  |  Owner
---------+--------+-------+----------
- public | orders | table | postgres
-(1 row)
-
-test_database=# ANALYZE VERBOSE public.orders;
-INFO:  analyzing "public.orders"
-INFO:  "orders": scanned 1 of 1 pages, containing 8 live rows and 0 dead rows; 8 rows in sample, 8 estimated total rows
-ANALYZE
-test_database=# select avg_width from pg_stats where tablename='orders';
- avg_width
------------
-         4
-        16
-         4
-(3 rows)
-
-test_database=#
+Список индексов:
+```commandline
+root@vagrant:/home/vagrant/elasticsearch# curl -X GET 'http://localhost:9200/_cat/indices?v'
+health status index uuid                   pri rep docs.count docs.deleted store.size pri.store.size
+green  open   ind-1 BFkMUrQhQ6WbX2fcRtWyBw   1   0          0            0       225b           225b
+yellow open   ind-3 3pqK8LXXSSuTPBqkHiALtQ   4   2          0            0       900b           900b
+yellow open   ind-2 Mgvj65RFRkKrUgbzc-DlFA   2   1          0            0       450b           450b
+root@vagrant:/home/vagrant/elasticsearch#
+```
+Статус:
+```commandline
+root@vagrant:/home/vagrant/elasticsearch# curl -X GET 'http://localhost:9200/_cluster/health/ind-1?pretty'
+{
+  "cluster_name" : "netology_test",
+  "status" : "green",
+  "timed_out" : false,
+  "number_of_nodes" : 1,
+  "number_of_data_nodes" : 1,
+  "active_primary_shards" : 1,
+  "active_shards" : 1,
+  "relocating_shards" : 0,
+  "initializing_shards" : 0,
+  "unassigned_shards" : 0,
+  "delayed_unassigned_shards" : 0,
+  "number_of_pending_tasks" : 0,
+  "number_of_in_flight_fetch" : 0,
+  "task_max_waiting_in_queue_millis" : 0,
+  "active_shards_percent_as_number" : 100.0
+}
+root@vagrant:/home/vagrant/elasticsearch# curl -X GET 'http://localhost:9200/_cluster/health/ind-2?pretty'
+{
+  "cluster_name" : "netology_test",
+  "status" : "yellow",
+  "timed_out" : false,
+  "number_of_nodes" : 1,
+  "number_of_data_nodes" : 1,
+  "active_primary_shards" : 2,
+  "active_shards" : 2,
+  "relocating_shards" : 0,
+  "initializing_shards" : 0,
+  "unassigned_shards" : 2,
+  "delayed_unassigned_shards" : 0,
+  "number_of_pending_tasks" : 0,
+  "number_of_in_flight_fetch" : 0,
+  "task_max_waiting_in_queue_millis" : 0,
+  "active_shards_percent_as_number" : 44.44444444444444
+}
+root@vagrant:/home/vagrant/elasticsearch# curl -X GET 'http://localhost:9200/_cluster/health/ind-3?pretty'
+{
+  "cluster_name" : "netology_test",
+  "status" : "yellow",
+  "timed_out" : false,
+  "number_of_nodes" : 1,
+  "number_of_data_nodes" : 1,
+  "active_primary_shards" : 4,
+  "active_shards" : 4,
+  "relocating_shards" : 0,
+  "initializing_shards" : 0,
+  "unassigned_shards" : 8,
+  "delayed_unassigned_shards" : 0,
+  "number_of_pending_tasks" : 0,
+  "number_of_in_flight_fetch" : 0,
+  "task_max_waiting_in_queue_millis" : 0,
+  "active_shards_percent_as_number" : 44.44444444444444
+}
+```
+Статус кластера:
+```commandline
+root@vagrant:/home/vagrant/elasticsearch# curl -XGET localhost:9200/_cluster/health/?pretty=true
+{
+  "cluster_name" : "netology_test",
+  "status" : "yellow",
+  "timed_out" : false,
+  "number_of_nodes" : 1,
+  "number_of_data_nodes" : 1,
+  "active_primary_shards" : 8,
+  "active_shards" : 8,
+  "relocating_shards" : 0,
+  "initializing_shards" : 0,
+  "unassigned_shards" : 10,
+  "delayed_unassigned_shards" : 0,
+  "number_of_pending_tasks" : 0,
+  "number_of_in_flight_fetch" : 0,
+  "task_max_waiting_in_queue_millis" : 0,
+  "active_shards_percent_as_number" : 44.44444444444444
+}
+```
+Удаление:
+```commandline
+root@vagrant:/home/vagrant/elasticsearch# curl -X DELETE 'http://localhost:9200/ind-1?pretty'
+{
+  "acknowledged" : true
+}
+root@vagrant:/home/vagrant/elasticsearch# curl -X DELETE 'http://localhost:9200/ind-2?pretty'
+{
+  "acknowledged" : true
+}
+root@vagrant:/home/vagrant/elasticsearch# curl -X DELETE 'http://localhost:9200/ind-3?pretty'
+{
+  "acknowledged" : true
+}
 ```
 
 **Задача 3**
-Архитектор и администратор БД выяснили, что ваша таблица orders разрослась до невиданных размеров и поиск по ней занимает долгое время. Вам, как успешному выпускнику курсов DevOps в нетологии предложили провести разбиение таблицы на 2 (шардировать на orders_1 - price>499 и orders_2 - price<=499).
+В данном задании вы научитесь:
 
-Предложите SQL-транзакцию для проведения данной операции.
+создавать бэкапы данных
+восстанавливать индексы из бэкапов
+Создайте директорию {путь до корневой директории с elasticsearch в образе}/snapshots.
 
-Можно ли было изначально исключить "ручное" разбиение при проектировании таблицы orders?
+Используя API зарегистрируйте данную директорию как snapshot repository c именем netology_backup.
 
-***Ответ***
-```
-test_database=# alter table orders rename to orders_old;
-ALTER TABLE
-test_database=# create table orders (id integer, title varchar(80), price integer) partition by range(price);
-CREATE TABLE
-test_database=# create table orders_499 partition of orders for values from (0) to (499);
-CREATE TABLE
-test_database=# create table orders_999 partition of orders for values from (499) to (999);
-CREATE TABLE
-test_database=# create table orders_1500 partition of orders for values from (1000) to (1500);
-CREATE TABLE
-test_database=# insert into orders (id, title, price) select * from orders_old;
-INSERT 0 8
-test_database=#
-```
-Да, можно было настроить секционирование таблицы.
+Приведите в ответе запрос API и результат вызова API для создания репозитория.
 
-**Задача 4**
-Используя утилиту pg_dump создайте бекап БД test_database.
+Создайте индекс test с 0 реплик и 1 шардом и приведите в ответе список индексов.
 
-Как бы вы доработали бэкап-файл, чтобы добавить уникальность значения столбца title для таблиц test_database?
+Создайте snapshot состояния кластера elasticsearch.
+
+Приведите в ответе список файлов в директории со snapshotами.
+
+Удалите индекс test и создайте индекс test-2. Приведите в ответе список индексов.
+
+Восстановите состояние кластера elasticsearch из snapshot, созданного ранее.
+
+Приведите в ответе запрос к API восстановления и итоговый список индексов.
+
+Подсказки:
+
+возможно вам понадобится доработать elasticsearch.yml в части директивы path.repo и перезапустить elasticsearch
 
 ***Ответ***
 
+Регистрация репозитория:
 ```commandline
-root@f0a76c51893a:/# cd /var/lib/postgresql/data/
-root@f0a76c51893a:/var/lib/postgresql/data# pg_dump -U postgres test_database > test_dump1.sql
+root@vagrant:/home/vagrant/elasticsearch# curl -XPOST localhost:9200/_snapshot/netology_backup?pretty -H 'Content-Type: application/json' -d'{"type": "fs", "settings": { "location":"/elasticsearch-8.1.0/snapshots/" }}'
+{
+  "acknowledged" : true
+}
 ```
-Создать первичный ключ в дампе, для каждой таблицы, в которой есть столбец title. Это придаст уникальности ему, за счет того, что не будет повторяться записи в столбце:
+Создание индекса:
 ```commandline
-CREATE TABLE public.orders (
-    id integer,
-    title character varying(80),
-    price integer,
-    CONSTRAINT title_pk PRIMARY KEY (title)
-)
-PARTITION BY RANGE (price);
-
-
-ALTER TABLE public.orders OWNER TO postgres;
-
-SET default_table_access_method = heap;
-
---
--- Name: orders_1500; Type: TABLE; Schema: public; Owner: postgres
---
-
-CREATE TABLE public.orders_1500 (
-    id integer,
-    title character varying(80),
-    price integer,
-    CONSTRAINT title_pk PRIMARY KEY (title)
-);
-ALTER TABLE ONLY public.orders ATTACH PARTITION public.orders_1500 FOR VALUES FROM (1000) TO (1500);
-
+root@vagrant:/home/vagrant/elasticsearch# curl -X PUT localhost:9200/test -H 'Content-Type: application/json' -d'{ "settings": { "number_of_shards": 1,  "number_of_replicas": 0 }}'
+{"acknowledged":true,"shards_acknowledged":true,"index":"test"}root@vagrant:/home/vagrant/elasticsearch#
+```
+Создание снапшота:
+```commandline
+root@vagrant:/home/vagrant/elasticsearch# curl -X PUT localhost:9200/_snapshot/netology_backup/elasticsearch?wait_for_completion=true
+{"snapshot":{"snapshot":"elasticsearch","uuid":"M5JF8kVwQIO4JD998PBEFQ","repository":"netology_backup","version_id":8010099,"version":"8.1.0","indices":[".geoip_databases","test"],"data_streams":[],"include_global_state":true,"state":"SUCCESS","start_time":"2022-03-14T16:04:10.112Z","start_time_in_millis":1647273850112,"end_time":"2022-03-14T16:04:11.742Z","end_time_in_millis":1647273851742,"duration_in_millis":1630,"failures":[],"shards":{"total":2,"failed":0,"successful":2},"feature_states":[{"feature_name":"geoip","indices":[".geoip_databases"]}]}}root@vagrant:/home/vagrant/elasticsearch#
+```
+Файлы снапшота:
+```commandline
+root@vagrant:/home/vagrant/elasticsearch# docker exec -it c29469e9dedd /bin/ls -la /elasticsearch-8.1.0/snapshots
+total 48
+drwxr-xr-x 1 elasticsearch elasticsearch  4096 Mar 14 16:04 .
+drwxr-xr-x 1 elasticsearch elasticsearch  4096 Mar 14 15:59 ..
+-rw-r--r-- 1 elasticsearch elasticsearch   846 Mar 14 16:04 index-0
+-rw-r--r-- 1 elasticsearch elasticsearch     8 Mar 14 16:04 index.latest
+drwxr-xr-x 4 elasticsearch elasticsearch  4096 Mar 14 16:04 indices
+-rw-r--r-- 1 elasticsearch elasticsearch 18273 Mar 14 16:04 meta-M5JF8kVwQIO4JD998PBEFQ.dat
+-rw-r--r-- 1 elasticsearch elasticsearch   361 Mar 14 16:04 snap-M5JF8kVwQIO4JD998PBEFQ.dat
+```
+Создание индексов, восстановление снапшота:
+```commandline
+root@vagrant:/home/vagrant/elasticsearch# curl -X DELETE 'http://localhost:9200/test?pretty'
+{
+  "acknowledged" : true
+}
+root@vagrant:/home/vagrant/elasticsearch# curl -X PUT localhost:9200/test-2?pretty -H 'Content-Type: application/json' -d'{ "settings": { "number_of_shards": 1,  "number_of_replicas": 0 }}'
+{
+  "acknowledged" : true,
+  "shards_acknowledged" : true,
+  "index" : "test-2"
+}
+root@vagrant:/home/vagrant/elasticsearch# curl -X GET 'http://localhost:9200/_cat/indices?v'
+health status index  uuid                   pri rep docs.count docs.deleted store.size pri.store.size
+green  open   test-2 k9znejj-QLSRIGNvo-duuQ   1   0          0            0       225b           225b
+root@vagrant:/home/vagrant/elasticsearch# curl -X POST localhost:9200/_snapshot/netology_backup/elasticsearch/_restore?pretty -H 'Content-Type: application/json' -d'{"include_global_state":true}'
+{
+  "accepted" : true
+}
+root@vagrant:/home/vagrant/elasticsearch# curl -X GET 'http://localhost:9200/_cat/indices?v'                                                                               health status index  uuid                   pri rep docs.count docs.deleted store.size pri.store.size
+green  open   test-2 k9znejj-QLSRIGNvo-duuQ   1   0          0            0       225b           225b
+green  open   test   3MuzfqtATJq7W6DmsbTNBw   1   0          0            0       225b           225b
 ```
